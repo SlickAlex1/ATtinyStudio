@@ -500,10 +500,18 @@ namespace AttinyStudio
         private void SetupSnippetsTab(TabPage tp) {
             FlowLayoutPanel f = new FlowLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(35), BackColor = Theme.ClrBack, WrapContents = true, AutoScroll = true };
             Action<string, string> add = (t, c) => { Button b = CreateTile(t, "Click to copy", (s, e) => { Clipboard.SetText(c); MessageBox.Show("Copied!"); }); f.Controls.Add(b); };
-            add("BASIC BLINK", "void setup() { pinMode(0, OUTPUT); }\nvoid loop() { digitalWrite(0, 1); delay(500); digitalWrite(0, 0); delay(500); }");
-            add("PWM DIMMING", "void setup() { pinMode(0, OUTPUT); }\nvoid loop() { for(int i=0; i<255; i++) { analogWrite(0, i); delay(10); } }");
-            add("ADC READ", "void setup() { Serial.begin(9600); }\nvoid loop() { int val = analogRead(A1); Serial.println(val); delay(100); }");
-            add("SOFT SERIAL", "#include <SoftwareSerial.h>\nSoftwareSerial mySerial(3, 4); // RX, TX\nvoid setup() { mySerial.begin(9600); }\nvoid loop() { mySerial.println(\"Hello\"); delay(1000); }");
+            add("BASIC BLINK", "void setup() {\n  pinMode(0, OUTPUT);\n}\n\nvoid loop() {\n  digitalWrite(0, HIGH);\n  delay(1000);\n  digitalWrite(0, LOW);\n  delay(1000);\n}");
+            add("PWM DIMMING", "void setup() {\n  pinMode(1, OUTPUT);\n}\n\nvoid loop() {\n  for (int i = 0; i <= 255; i++) {\n    analogWrite(1, i);\n    delay(10);\n  }\n  for (int i = 255; i >= 0; i--) {\n    analogWrite(1, i);\n    delay(10);\n  }\n}");
+            add("ADC READ", "void setup() {\n  pinMode(0, OUTPUT);\n}\n\nvoid loop() {\n  int val = analogRead(A1);\n  digitalWrite(0, HIGH);\n  delay(val);\n  digitalWrite(0, LOW);\n  delay(val);\n}");
+            add("SOFT SERIAL", "#include <SoftwareSerial.h>\n\nSoftwareSerial mySerial(3, 4); // RX, TX\n\nvoid setup() {\n  mySerial.begin(9600);\n  mySerial.println(\"ATtiny85 Serial Initialized\");\n}\n\nvoid loop() {\n  mySerial.println(\"Hello from ATtiny85\");\n  delay(1000);\n}");
+            add("I2C MASTER", "#include <TinyWireM.h>\n\n#define ADDR 0x27\n\nvoid setup() {\n  TinyWireM.begin();\n}\n\nvoid loop() {\n  TinyWireM.beginTransmission(ADDR);\n  TinyWireM.send(0x01);\n  TinyWireM.endTransmission();\n  delay(500);\n}");
+            add("INTERNAL TEMP", "long readTemp() {\n  ADMUX = _BV(REFS1) | _BV(MUX3) | _BV(MUX2) | _BV(MUX1) | _BV(MUX0);\n  delay(2);\n  ADCSRA |= _BV(ADSC);\n  while (bit_is_set(ADCSRA, ADSC));\n  return (high << 8) | low;\n}\n\nvoid setup() {}\n\nvoid loop() {\n  long raw = readTemp();\n  delay(1000);\n}");
+            add("EEPROM", "#include <EEPROM.h>\n\nvoid setup() {\n  EEPROM.write(0, 123);\n  byte val = EEPROM.read(0);\n}\n\nvoid loop() {}");
+            add("SLEEP WAKE", "#include <avr/sleep.h>\n#include <avr/interrupt.h>\n\nvoid setup() {\n  pinMode(0, OUTPUT); pinMode(2, INPUT_PULLUP);\n  GIMSK |= _BV(PCIE); PCMSK |= _BV(PCINT2); sei();\n}\n\nvoid loop() {\n  digitalWrite(0, HIGH); delay(1000); digitalWrite(0, LOW);\n  set_sleep_mode(SLEEP_MODE_PWR_DOWN);\n  sleep_enable(); sleep_cpu(); sleep_disable();\n}\n\nISR(PCINT0_vect) {}");
+            add("WATCHDOG", "#include <avr/wdt.h>\n#include <avr/sleep.h>\n\nvoid setup() {\n  MCUSR &= ~(1 << WDRF);\n  WDTCR |= (1 << WDCE) | (1 << WDE);\n  WDTCR = (1 << WDP3) | (1 << WDP0) | (1 << WDIE);\n}\n\nvoid loop() {\n  pinMode(0, OUTPUT); digitalWrite(0, HIGH); delay(100); digitalWrite(0, LOW); pinMode(0, INPUT);\n  set_sleep_mode(SLEEP_MODE_PWR_DOWN);\n  sleep_enable(); sleep_cpu();\n}\n\nISR(WDT_vect) {}");
+            add("NEOPIXEL", "#include <Adafruit_NeoPixel.h>\n\nAdafruit_NeoPixel p(8, 0, NEO_GRB + NEO_KHZ800);\n\nvoid setup() { p.begin(); }\n\nvoid loop() {\n  for(int i=0; i<8; i++) {\n    p.setPixelColor(i, p.Color(150, 0, 0)); p.show(); delay(100);\n  }\n}");
+            add("CAP TOUCH", "int readCap(int p) {\n  pinMode(p, OUTPUT); digitalWrite(p, LOW); delay(1);\n  pinMode(p, INPUT); return analogRead(p);\n}\n\nvoid loop() {\n  if (readCap(3) > 500) { /* Touched */ }\n}");
+            add("TONE BEEP", "void play(int p, int f, int d) {\n  long prd = 1000000L / f; long cyc = (long)f * d / 1000;\n  for (long i = 0; i < cyc; i++) {\n    digitalWrite(p, HIGH); delayMicroseconds(prd / 2);\n    digitalWrite(p, LOW); delayMicroseconds(prd / 2);\n  }\n}\n\nvoid setup() { pinMode(1, OUTPUT); }\nvoid loop() { play(1, 440, 500); delay(1000); }");
             tp.Controls.Add(f);
         }
 

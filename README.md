@@ -8,29 +8,37 @@ ATtiny Studio is a professional, high-performance embedded tool designed for the
 
 ---
 
-## Contributing
+## Key Features
 
-We welcome and appreciate all contributions. Whether you are fixing a bug, adding a feature, or improving documentation, your help improves ATtiny Studio for the community.
+### Comprehensive Write Operations
+The application supports three distinct write modes to ensure full control over your hardware:
+- **Flash Writing**: Upload production-ready `.HEX` files to the main program memory.
+- **Fuse Management**: Configure system clocks and hardware behaviors via Low, High, and Extended fuse bytes (one-click presets included).
+- **EEPROM Writing**: Store and retrieve non-volatile data using binary `.BIN` files.
 
-1.  **Fork** the repository.
-2.  **Create** your feature branch (`git checkout -b feature/AmazingFeature`).
-3.  **Commit** your changes (`git commit -m 'Add some AmazingFeature'`).
-4.  **Push** to the branch (`git push origin feature/AmazingFeature`).
-5.  **Open** a Pull Request.
+### Specialized Tools
+- **Live EEPROM Viewer**: A real-time Hex and ASCII visualizer that allows you to inspect the chip's internal memory without external software.
+- **Batch Production Tool**: Automate the flashing of hundreds of chips with custom delays and auto-next functionality.
+- **Driver Suite**: Integrated access to essential drivers for CH340, FTDI, CP210x, and Zadig (libusb).
+- **Code Snippets**: An extensive, built-in library of Arduino IDE snippets for everything from basic Blinks to advanced Sleep modes and NeoPixels.
 
-Technical suggestions and bug reports can be submitted via the GitHub Issues page.
+### Supported Microcontrollers
+The tool is pre-configured for a wide variety of 8-bit AVR chips, including:
+- **ATtiny Series**: ATtiny13, ATtiny25, ATtiny45, ATtiny85.
+- **ATmega Series**: ATmega48, ATmega88, ATmega168, ATmega328P.
+- **Performance Series**: ATmega32U4, ATmega2560.
 
 ---
 
-## Key Features
+## 📸 Screenshots
 
-- **High-Speed Flasher**: Optimized for ATtiny85, supports .HEX and .BIN files.
-- **Batch Production Tool**: Automate the flashing of multiple chips with custom delays and auto-next functionality.
-- **Fuse Manager**: Simplifies clock speed settings (Internal 1MHz, 8MHz, 16MHz PLL) with one-click presets.
-- **EEPROM Viewer**: Live Hex/ASCII visualization of chip memory.
-- **Driver Suite**: Integrated access to CH340, Zadig (libusb), FTDI, and CP210x drivers.
-- **Code Snippets**: Quick-copy library for common tasks including Blink, PWM, ADC, and SoftwareSerial.
-- **64-Bit Native**: Optimized for modern Windows (win-x64) environments.
+| Main Interface | Fuse Manager | Batch Flasher |
+| :--- | :--- | :--- |
+| ![Main](Screenshots/Screenshot%202026-04-02%20230843.png) | ![Fuses](Screenshots/Screenshot%202026-04-02%20231100.png) | ![Batch](Screenshots/Screenshot%202026-04-02%20231112.png) |
+
+| EEPROM Viewer | Code Snippets |
+| :--- | :--- |
+| ![EEPROM](Screenshots/Screenshot%202026-04-02%20231146.png) | ![Snippets](Screenshots/Screenshot%202026-04-02%20231222.png) |
 
 ---
 
@@ -46,74 +54,37 @@ ATtiny Studio utilizes a standalone, portable build system. The project can be c
 
 1.  **Clone the Repository**:
     ```bash
-    git clone https://github.com/SlickAlex/Attiny85-Retro-Console.git
-    cd Attiny85-Retro-Console
+    git clone https://github.com/SlickAlex1/ATtinyStudio.git
+    cd ATtinyStudio
     ```
 
 2.  **Initialize the Compiler**:
-    Execute **`UpdateCompiler.bat`**. This script performs the following:
-    - Creates a local `Compiler/` directory.
-    - Automatically downloads and extracts the latest portable **.NET 10 SDK**.
-    - Verifies the installation.
-    *This ensures a clean environment without global system modifications.*
+    Execute **`UpdateCompiler.bat`**. This script creates a local `Compiler/` directory and downloads the latest portable **.NET 10 SDK**.
 
 3.  **Build the Project**:
-    Execute **`build.bat`**. The build script automates:
-    - Environment validation.
-    - Metadata generation from `metadata.txt`.
-    - Asset embedding (Avrdude, Drivers, Icons).
-    - Compilation into a **single-file, self-contained executable**.
+    Execute **`build.bat`**. The build script automates metadata generation, asset embedding, and compilation into a **single-file executable**.
 
 4.  **Locate the Output**:
     The compiled application will be generated in the **`Output/`** directory as `ATtinyStudio.exe`.
 
 ---
 
-## Common Code Examples
+## Sample Code (Arduino IDE)
 
-The following snippets provide a baseline for ATtiny85 development using standard AVR C.
+The following examples demonstrate basic operations for the ATtiny85. More advanced examples are available directly within the application.
 
 ### Basic Blink
-Configures PB0 as an output and toggles it with a 500ms delay.
+Blinks an LED on physical pin 5 (Digital Pin 0).
 ```cpp
-#include <avr/io.h>
-#include <util/delay.h>
-
-int main(void) {
-    DDRB |= (1 << PB0); // Set PB0 as output
-    while (1) {
-        PORTB |= (1 << PB0); // Pin High
-        _delay_ms(500);
-        PORTB &= ~(1 << PB0); // Pin Low
-        _delay_ms(500);
-    }
+void setup() {
+  pinMode(0, OUTPUT); 
 }
-```
 
-### Pulse Width Modulation (PWM)
-Initializes Fast PWM on PB0 using Timer 0.
-```cpp
-void init_pwm() {
-    DDRB |= (1 << PB0); // Set PB0 as output
-    TCCR0A = (1 << COM0A1) | (1 << WGM01) | (1 << WGM00); // Fast PWM mode
-    TCCR0B = (1 << CS01); // Prescaler 8
-    OCR0A = 127; // 50% Duty Cycle
-}
-```
-
-### Analog to Digital Conversion (ADC)
-Reads the analog value from PB4 (ADC2).
-```cpp
-uint16_t read_adc() {
-    // Select PB4 (ADC2) and set reference to VCC
-    ADMUX = (1 << MUX1); 
-    // Enable ADC and set prescaler to 64 (125kHz at 8MHz clock)
-    ADCSRA = (1 << ADEN) | (1 << ADPS2) | (1 << ADPS1); 
-    
-    ADCSRA |= (1 << ADSC); // Start conversion
-    while (ADCSRA & (1 << ADSC)); // Wait for completion
-    
-    return ADC;
+void loop() {
+  digitalWrite(0, HIGH);
+  delay(1000);
+  digitalWrite(0, LOW);
+  delay(1000);
 }
 ```
 
@@ -122,28 +93,17 @@ uint16_t read_adc() {
 ## License and Credits
 
 ### Project License
-This project is licensed under the **GNU General Public License v3.0**. Detailed terms can be found in the [LICENSE](LICENSE) file. The source code must remain open for forks and redistributions.
+This project is licensed under the **GNU General Public License v3.0**. Detailed terms can be found in the [LICENSE](LICENSE) file.
 
 ### Third-Party Credits
 - **AVRDUDE**: (v8.1+) - Licensed under **GPLv2**. [Source](https://github.com/avrdudes/avrdude).
-- **.NET Runtime**: Licensed under the **MIT License**.
-- **Drivers**: Hardware compatibility drivers (CH340, FTDI, CP210x) are the property of their respective owners.
-
----
-
-## Screenshots
-
-> [!TIP]
-> Place application screenshots in the `Assets/` directory to update the previews below.
-
-| Main Interface | Batch Flasher | Chip Info |
-| :--- | :--- | :--- |
-| ![Main](Assets/screenshot_main.png) | ![Batch](Assets/screenshot_batch.png) | ![Info](Assets/screenshot_info.png) |
+- **.NET Runtime**: Licensed under the MIT License.
+- **Drivers**: Hardware compatibility drivers (CH340, FTDI, CP210x) remain property of their respective owners.
 
 ---
 
 ## Contact
 
-**SlickAlex** - [GitHub Profile](https://github.com/SlickAlex)
+**SlickAlex** - [GitHub Profile](https://github.com/SlickAlex1)
 
-Project Link: [https://github.com/SlickAlex/Attiny85-Retro-Console](https://github.com/SlickAlex/Attiny85-Retro-Console)
+Project Link: [https://github.com/SlickAlex1/ATtinyStudio](https://github.com/SlickAlex1/ATtinyStudio)
