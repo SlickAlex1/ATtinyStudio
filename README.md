@@ -52,7 +52,7 @@ ATtiny Studio interfaces with a wide range of industry-standard programmers:
 
 | Batch Flasher | Fuse Manager |
 | :--- | :--- |
-| ![Batch](Screenshots/Screenshot%202026-04-02%20231100.png) | ![Fuses](Screenshots/Screenshot%202026-04-02%233226.png) |
+| ![Batch](Screenshots/Screenshot%202026-04-02%20231100.png) | ![Fuses](Screenshots/Screenshot%202026-04-02%20233226.png) |
 
 ---
 
