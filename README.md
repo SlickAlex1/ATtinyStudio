@@ -10,23 +10,24 @@ ATtiny Studio is a professional, high-performance embedded tool designed for the
 
 ## Key Features
 
-### Comprehensive Write Operations
-The application supports three distinct write modes to ensure full control over your hardware:
-- **Flash Writing**: Upload production-ready `.HEX` files to the main program memory.
-- **Fuse Management**: Configure system clocks and hardware behaviors via Low, High, and Extended fuse bytes (one-click presets included).
-- **EEPROM Writing**: Store and retrieve non-volatile data using binary `.BIN` files.
+### Comprehensive Writing Capabilities
+The application supports three critical writing modes for full hardware control:
+- **Flash Memory**: Write `.HEX` production files to the primary program storage.
+- **Fuse Configuration**: Professional management of Low, High, and Extended fuse bytes to control clock speeds and hardware features.
+- **EEPROM Storage**: Write and read non-volatile data via `.BIN` files.
 
-### Specialized Tools
-- **Live EEPROM Viewer**: A real-time Hex and ASCII visualizer that allows you to inspect the chip's internal memory without external software.
-- **Batch Production Tool**: Automate the flashing of hundreds of chips with custom delays and auto-next functionality.
-- **Driver Suite**: Integrated access to essential drivers for CH340, FTDI, CP210x, and Zadig (libusb).
-- **Code Snippets**: An extensive, built-in library of Arduino IDE snippets for everything from basic Blinks to advanced Sleep modes and NeoPixels.
+### Professional Toolset
+- **Live EEPROM Viewer**: Integrated Hex and ASCII visualizer for real-time memory inspection.
+- **Batch Flashing System**: Streamlined interface for high-volume production with auto-next and custom delay settings.
+- **Chip Information**: Detailed technical readouts including signature bytes and hardware specifications.
+- **Integrated Driver Suite**: One-click access to CH340, Zadig (libusb), FTDI, and CP210x drivers.
+- **Built-in Code Snippets**: A library of ready-to-use Arduino IDE examples for interrupts, sleep modes, and peripherals.
 
-### Supported Microcontrollers
-The tool is pre-configured for a wide variety of 8-bit AVR chips, including:
-- **ATtiny Series**: ATtiny13, ATtiny25, ATtiny45, ATtiny85.
-- **ATmega Series**: ATmega48, ATmega88, ATmega168, ATmega328P.
-- **Performance Series**: ATmega32U4, ATmega2560.
+### Supported Devices
+ATtiny Studio is pre-configured for a wide range of AVR microcontrollers:
+- **ATtiny**: 13, 25, 45, 85
+- **ATmega**: 48, 88, 168, 328P
+- **High Performance**: 32U4, 2560
 
 ---
 
@@ -34,21 +35,19 @@ The tool is pre-configured for a wide variety of 8-bit AVR chips, including:
 
 | Main Interface | Fuse Manager | Batch Flasher |
 | :--- | :--- | :--- |
-| ![Main](Screenshots/Screenshot%202026-04-02%20230843.png) | ![Fuses](Screenshots/Screenshot%202026-04-02%20231100.png) | ![Batch](Screenshots/Screenshot%202026-04-02%20231112.png) |
+| ![Main](Screenshots/Screenshot%202026-04-02%20231146.png) | ![Fuses](Screenshots/Screenshot%202026-04-02%20231112.png) | ![Batch](Screenshots/Screenshot%202026-04-02%20230843.png) |
 
-| EEPROM Viewer | Code Snippets |
+| Chip Info | EEPROM Viewer |
 | :--- | :--- |
-| ![EEPROM](Screenshots/Screenshot%202026-04-02%20231146.png) | ![Snippets](Screenshots/Screenshot%202026-04-02%20231222.png) |
+| ![Info](Screenshots/Screenshot%202026-04-02%20231100.png) | ![EEPROM](Screenshots/Screenshot%202026-04-02%20231222.png) |
 
 ---
 
 ## Environment Setup and Build Guide
 
-ATtiny Studio utilizes a standalone, portable build system. The project can be compiled without a full Visual Studio installation.
-
 ### 1. Prerequisites
 - **Windows 10/11** (64-bit).
-- **Internet Connection** (required for the initial SDK retrieval).
+- **Internet Connection** (for the initial SDK retrieval).
 
 ### 2. Step-by-Step Setup
 
@@ -59,46 +58,25 @@ ATtiny Studio utilizes a standalone, portable build system. The project can be c
     ```
 
 2.  **Initialize the Compiler**:
-    Execute **`UpdateCompiler.bat`**. This script creates a local `Compiler/` directory and downloads the latest portable **.NET 10 SDK**.
+    Execute **`UpdateCompiler.bat`** to download the portable **.NET 10 SDK**.
 
 3.  **Build the Project**:
-    Execute **`build.bat`**. The build script automates metadata generation, asset embedding, and compilation into a **single-file executable**.
+    Execute **`build.bat`** to compile the **single-file executable**.
 
 4.  **Locate the Output**:
-    The compiled application will be generated in the **`Output/`** directory as `ATtinyStudio.exe`.
-
----
-
-## Sample Code (Arduino IDE)
-
-The following examples demonstrate basic operations for the ATtiny85. More advanced examples are available directly within the application.
-
-### Basic Blink
-Blinks an LED on physical pin 5 (Digital Pin 0).
-```cpp
-void setup() {
-  pinMode(0, OUTPUT); 
-}
-
-void loop() {
-  digitalWrite(0, HIGH);
-  delay(1000);
-  digitalWrite(0, LOW);
-  delay(1000);
-}
-```
+    Find your app in the **`Output/`** directory as `ATtinyStudio.exe`.
 
 ---
 
 ## License and Credits
 
 ### Project License
-This project is licensed under the **GNU General Public License v3.0**. Detailed terms can be found in the [LICENSE](LICENSE) file.
+Licensed under the **GNU General Public License v3.0**. 
 
 ### Third-Party Credits
-- **AVRDUDE**: (v8.1+) - Licensed under **GPLv2**. [Source](https://github.com/avrdudes/avrdude).
+- **AVRDUDE**: (v8.1+) - Licensed under **GPLv2**.
 - **.NET Runtime**: Licensed under the MIT License.
-- **Drivers**: Hardware compatibility drivers (CH340, FTDI, CP210x) remain property of their respective owners.
+- **Drivers**: Compatibility drivers remain property of their respective owners.
 
 ---
 
