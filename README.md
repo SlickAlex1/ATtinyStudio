@@ -23,23 +23,36 @@ The application supports three critical writing modes for full hardware control:
 - **Integrated Driver Suite**: One-click access to CH340, Zadig (libusb), FTDI, and CP210x drivers.
 - **Built-in Code Snippets**: A library of ready-to-use Arduino IDE examples for interrupts, sleep modes, and peripherals.
 
-### Supported Devices
-ATtiny Studio is pre-configured for a wide range of AVR microcontrollers:
-- **ATtiny**: 13, 25, 45, 85
-- **ATmega**: 48, 88, 168, 328P
-- **High Performance**: 32U4, 2560
+> [!IMPORTANT]
+> **Settings Persistence**: Application configurations (Chip selection, Programmer type, Baud rate, etc.) will **not** be saved between sessions unless the application is installed on your system. To enable settings persistence, go to the **About** tab and click **Install Now**.
+
+---
+
+## Supported Hardware & Programmers
+
+### Compatible Write Devices (Programmers)
+ATtiny Studio interfaces with a wide range of industry-standard programmers:
+- **AVR ISP**: stk500v1, stk500v2, avrispmkII.
+- **USB Native**: USBasp, USBtiny.
+- **Development Boards**: Arduino (as ISP).
+- **Advanced Tools**: BusPirate, Picoprog, JTAGICE.
+
+### Supported Microcontrollers
+- **ATtiny Series**: 13, 25, 45, 85.
+- **ATmega Series**: 48, 88, 168, 328P.
+- **High Performance**: 32U4, 2560.
 
 ---
 
 ## 📸 Screenshots
 
-| Main Interface | Fuse Manager | Batch Flasher |
+| Main Interface | EEPROM Viewer | Batch Flasher |
 | :--- | :--- | :--- |
-| ![Main](Screenshots/Screenshot%202026-04-02%20231146.png) | ![Fuses](Screenshots/Screenshot%202026-04-02%20231112.png) | ![Batch](Screenshots/Screenshot%202026-04-02%20230843.png) |
+| ![Main](Screenshots/Screenshot%202026-04-02%20231222.png) | ![EEPROM](Screenshots/Screenshot%202026-04-02%20231146.png) | ![Batch](Screenshots/Screenshot%202026-04-02%20231112.png) |
 
-| Chip Info | EEPROM Viewer |
+| Chip Info | Fuse Manager |
 | :--- | :--- |
-| ![Info](Screenshots/Screenshot%202026-04-02%20231100.png) | ![EEPROM](Screenshots/Screenshot%202026-04-02%20231222.png) |
+| ![Info](Screenshots/Screenshot%202026-04-02%20231100.png) | ![Fuses](Screenshots/Screenshot%202026-04-02%20230843.png) |
 
 ---
 
