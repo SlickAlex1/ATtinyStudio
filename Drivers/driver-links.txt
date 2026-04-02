@@ -1,0 +1,11 @@
+Zadig (For Native USB programmers like USBasp, AVRISP mkII):
+https://zadig.akeo.ie/
+
+CH340 / CH341 (For most cheap Arduino clones and basic serial boards):
+https://www.wch-ic.com/downloads/CH341SER_EXE.html
+
+CP210x (For ESP32s, NodeMCUs, and higher-quality clones):
+https://www.silabs.com/developers/usb-to-uart-bridge-vcp-drivers
+
+FTDI FT232 (For classic Arduinos and standard FTDI breakout boards):
+https://ftdichip.com/drivers/vcp-drivers/

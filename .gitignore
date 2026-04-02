@@ -1,0 +1,18 @@
+# Build Output
+Output/
+bin/
+obj/
+BuildTemp/
+
+# Local Compiler Environment (Managed by UpdateCompiler.bat)
+Compiler/
+
+# IDE Specific
+.vs/
+*.user
+*.userosscache
+*.sln.docstates
+
+# System Files
+Thumbs.db
+desktop.ini

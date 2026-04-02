@@ -1,0 +1,9 @@
+VERSION=1.1.1.1
+TITLE=ATtiny Studio
+AUTHOR=SlickAlex
+DESCRIPTION=Professional ATtiny85 Embedded Tool
+COMPANY=SlickAlex
+PRODUCT=ATtiny Studio
+COPYRIGHT=
+EXE_NAME=ATtinyStudio.exe
+LICENSE=GPL-3.0-or-later
