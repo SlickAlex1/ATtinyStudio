@@ -46,13 +46,13 @@ ATtiny Studio interfaces with a wide range of industry-standard programmers:
 
 ## 📸 Screenshots
 
-| Main Interface | EEPROM Viewer | Batch Flasher |
+| EEPROM Viewer | Main Interface | Chip Info |
 | :--- | :--- | :--- |
-| ![Main](Screenshots/Screenshot%202026-04-02%20231222.png) | ![EEPROM](Screenshots/Screenshot%202026-04-02%20231146.png) | ![Batch](Screenshots/Screenshot%202026-04-02%20231112.png) |
+| ![EEPROM](Screenshots/Screenshot%202026-04-02%20231222.png) | ![Main](Screenshots/Screenshot%202026-04-02%20231146.png) | ![Chip](Screenshots/Screenshot%202026-04-02%20231112.png) |
 
-| Chip Info | Fuse Manager |
+| Batch Flasher | Fuse Manager |
 | :--- | :--- |
-| ![Info](Screenshots/Screenshot%202026-04-02%20231100.png) | ![Fuses](Screenshots/Screenshot%202026-04-02%20230843.png) |
+| ![Batch](Screenshots/Screenshot%202026-04-02%20231100.png) | ![Fuses](Screenshots/Screenshot%2026-04-02%233226.png) |
 
 ---
 
