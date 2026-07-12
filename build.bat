@@ -106,15 +106,21 @@ for %%f in ("%AVR_DIR%\*.zip") do set "ZIP_FILE=%%f"
 if "!ZIP_FILE!"=="" (echo [ERROR] Avrdude ZIP missing! & pause & exit /b)
 for /f "tokens=2 delims=-v" %%a in ("!ZIP_FILE!") do set "AVR_VER=%%a"
 if "!AVR_VER!"=="" set "AVR_VER=8.1"
-echo !AVR_VER! > "%TEMP_EXT%\avr_version.txt"
 powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Path '!ZIP_FILE!' -DestinationPath '%TEMP_EXT%' -Force"
+del /Q /S "%TEMP_EXT%\*.pdb" >nul 2>&1
 
 if exist "%ASSETS_DIR%\" (
     for %%f in ("%ASSETS_DIR%\*.*") do (
         if not "%%~nxf"=="icon.ico" copy /Y "%%f" "%TEMP_EXT%\" >nul
     )
+    if exist "%ASSETS_DIR%\Pinouts\" (
+        xcopy "%ASSETS_DIR%\Pinouts" "%TEMP_EXT%\Pinouts\" /E /I /Y >nul
+    )
 )
-if exist "%DRIVERS_DIR%\" xcopy "%DRIVERS_DIR%" "%TEMP_EXT%\Drivers\" /E /I /Y >nul
+if exist "%DRIVERS_DIR%\" (
+    xcopy "%DRIVERS_DIR%" "%TEMP_EXT%\Drivers\" /E /I /Y >nul
+    del /Q /S "%TEMP_EXT%\Drivers\*.txt" >nul 2>&1
+)
 
 :: Copy Uninstaller to temp and replace placeholder
 if exist "%UNINSTALLER_SRC%" (
@@ -144,10 +150,14 @@ echo     ^<PublishSingleFile^>true^</PublishSingleFile^> >> "%PROJ_FILE%"
 echo     ^<SelfContained^>true^</SelfContained^> >> "%PROJ_FILE%"
 echo     ^<RuntimeIdentifier^>win-x64^</RuntimeIdentifier^> >> "%PROJ_FILE%"
 echo     ^<IncludeNativeLibrariesForSelfExtract^>true^</IncludeNativeLibrariesForSelfExtract^> >> "%PROJ_FILE%"
-echo     ^<PublishReadyToRun^>true^</PublishReadyToRun^> >> "%PROJ_FILE%"
+echo     ^<PublishTrimmed^>true^</PublishTrimmed^> >> "%PROJ_FILE%"
+echo     ^<TrimMode^>partial^</TrimMode^> >> "%PROJ_FILE%"
+echo     ^<SuppressTrimAnalysisWarnings^>true^</SuppressTrimAnalysisWarnings^> >> "%PROJ_FILE%"
+echo     ^<PublishReadyToRun^>false^</PublishReadyToRun^> >> "%PROJ_FILE%"
 echo     ^<EnableCompressionInSingleFile^>true^</EnableCompressionInSingleFile^> >> "%PROJ_FILE%"
 echo     ^<SupportedOSPlatformVersion^>7.0^</SupportedOSPlatformVersion^> >> "%PROJ_FILE%"
 echo     ^<SatelliteResourceLanguages^>en^</SatelliteResourceLanguages^> >> "%PROJ_FILE%"
+echo     ^<InvariantGlobalization^>true^</InvariantGlobalization^> >> "%PROJ_FILE%"
 echo     ^<DebugType^>none^</DebugType^> >> "%PROJ_FILE%"
 echo     ^<DebugSymbols^>false^</DebugSymbols^> >> "%PROJ_FILE%"
 echo     ^<OptimizationPreference^>Size^</OptimizationPreference^> >> "%PROJ_FILE%"

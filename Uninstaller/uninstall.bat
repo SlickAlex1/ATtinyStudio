@@ -2,14 +2,6 @@
 title ATtiny Studio Uninstaller
 setlocal enabledelayedexpansion
 
-:: 1. Request Administrator Privileges
->nul 2>&1 "%SYSTEMROOT%\system32\cacls.exe" "%SYSTEMROOT%\system32\config\system"
-if '%errorlevel%' NEQ '0' (
-    echo [ERROR] This uninstaller requires Administrator privileges.
-    echo Please run the uninstaller as an Administrator.
-    pause
-    exit /b
-)
 
 :: 2. Identify Application Directory
 set "APP_DIR=%~dp0"
@@ -30,7 +22,7 @@ timeout /t 2 /nobreak >nul
 
 :: 4. Remove Registry Entries
 echo [2/4] Wiping registry configuration...
-reg delete "HKLM\Software\Microsoft\Windows\CurrentVersion\Uninstall\ATtinyStudio" /f >nul 2>&1
+reg delete "HKCU\Software\Microsoft\Windows\CurrentVersion\Uninstall\ATtinyStudio" /f >nul 2>&1
 
 :: 5. Remove Shortcuts
 echo [3/4] Cleaning up desktop shortcuts...
