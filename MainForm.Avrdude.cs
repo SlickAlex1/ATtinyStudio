@@ -17,10 +17,17 @@ namespace AttinyStudio
 {
     public partial class MainForm
     {
+        private string FuseWriteCmd(FuseOption opt) { return FuseWriteCmd(opt.L, opt.H, opt.E); }
+        private string FuseWriteCmd(string l, string h, string e) {
+            bool hasE = chipData.ContainsKey(selPart) && chipData[selPart].HasEfuse;
+            return string.Format("-U lfuse:w:{0}:m -U hfuse:w:{1}:m", l, h) + (hasE ? string.Format(" -U efuse:w:{0}:m", e) : "");
+        }
+
         private async void RefreshChipDynamicInfo() {
             if (cbPorts.SelectedItem == null) { lblChipDynamicInfo.Text = "NO PORT SELECTED"; lblChipDynamicInfo.ForeColor = Color.Firebrick; return; }
             lblChipDynamicInfo.Text = "ATTEMPTING DETECTION..."; lblChipDynamicInfo.ForeColor = Color.Cyan; btnRetryDetection.Enabled = false;
-            string extra = (s_Verbose ? " -v" : "") + (s_Force ? " -F" : "") + (!string.IsNullOrWhiteSpace(s_BitClock) ? " -B " + s_BitClock : "");
+            if (extractTask != null) await extractTask;
+            string extra = (s_Force ? " -F" : "") + (!string.IsNullOrWhiteSpace(s_BitClock) ? " -B " + s_BitClock : "");
             string full = string.Format("-C \"{0}\" -c {1} -p {2} -P {3} -b {4} {5} -v", avrdudeConfPath, selProg, selPart, cbPorts.SelectedItem, selBaud, extra);
             await Task.Run(() => {
                 try {
@@ -85,17 +92,20 @@ namespace AttinyStudio
                 }
             }
             if (found) return Path.Combine(tempDir, folderPrefix.Replace("/", "\\"));
-            return ExtractResource(folderPrefix);
+            string single = ExtractResource(folderPrefix);
+            return File.Exists(single) ? single : null;
         }
 
 
         private async void ViewEeprom() {
             if (cbPorts.SelectedItem == null) return;
             string op = Path.Combine(tempDir, "live_eeprom.bin");
+            try { if (File.Exists(op)) File.Delete(op); } catch { }
             lblStatus.Text = "  READING..."; lblStatus.BackColor = Theme.ClrAccent; progress.Style = ProgressBarStyle.Marquee; SetAbortState(true);
-            await ExecuteAvrdudeTaskWithOutput($"-U eeprom:r:\"{op}\":r");
-            if (File.Exists(op)) new EepromViewer(File.ReadAllBytes(op), this.Icon).Show();
-            lblStatus.Text = "  READY"; progress.Style = ProgressBarStyle.Continuous; SetAbortState(false);
+            var res = await ExecuteAvrdudeTaskWithOutput($"-U eeprom:r:\"{op}\":r");
+            if (res.Success && File.Exists(op)) { lblStatus.Text = "  READY"; lblStatus.BackColor = Theme.ClrAccent; new EepromViewer(File.ReadAllBytes(op), this.Icon).Show(this); }
+            else { lblStatus.Text = "  FAILED"; lblStatus.BackColor = Color.Firebrick; Log("[ERROR] EEPROM read failed."); }
+            progress.Style = ProgressBarStyle.Continuous; SetAbortState(false);
         }
 
         private async void RunAvrdude(string args, bool isFile, string filter, string input = null) {
@@ -112,20 +122,28 @@ namespace AttinyStudio
         }
 
         private async Task<(bool Success, string Output)> ExecuteAvrdudeTaskWithOutput(string args, string input = null) {
+            if (extractTask != null) await extractTask;
+            if (avrdudePath == null || !File.Exists(avrdudePath)) { Log("[ERROR] avrdude.exe could not be extracted. Check disk space / antivirus quarantine."); return (false, ""); }
             this.Invoke((System.Windows.Forms.MethodInvoker)delegate { progress.Style = ProgressBarStyle.Marquee; });
             string extra = (s_Verbose ? " -v" : "") + (s_Force ? " -F" : "") + (!string.IsNullOrWhiteSpace(s_BitClock) ? " -B " + s_BitClock : "");
             string full = string.Format("-C \"{0}\" -c {1} -p {2} -P {3} -b {4} {5} {6}", avrdudeConfPath, selProg, selPart, cbPorts.SelectedItem, selBaud, extra, args);
             Log("> avrdude " + args); StringBuilder raw = new StringBuilder();
             bool ok = await Task.Run(() => {
                 try {
-                    currentProcess = new Process { StartInfo = new ProcessStartInfo { FileName = avrdudePath, Arguments = full, UseShellExecute = false, RedirectStandardError = true, RedirectStandardInput = input != null, CreateNoWindow = true, WorkingDirectory = tempDir } };
-                    currentProcess.Start(); if (input != null) { currentProcess.StandardInput.Write(input); currentProcess.StandardInput.Flush(); }
-                    StreamReader sr = currentProcess.StandardError;
-                    while (!sr.EndOfStream) { string line = sr.ReadLine(); if (line == null) break; raw.AppendLine(line); this.Invoke((System.Windows.Forms.MethodInvoker)delegate { Log(line); }); }
+                    currentProcess = new Process { StartInfo = new ProcessStartInfo { FileName = avrdudePath, Arguments = full, UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, RedirectStandardInput = input != null, CreateNoWindow = true, WorkingDirectory = tempDir } };
+                    DataReceivedEventHandler onLine = (s, e) => {
+                        if (e.Data == null) return;
+                        lock (raw) raw.AppendLine(e.Data);
+                        try { this.BeginInvoke((System.Windows.Forms.MethodInvoker)delegate { Log(e.Data); }); } catch { }
+                    };
+                    currentProcess.OutputDataReceived += onLine; currentProcess.ErrorDataReceived += onLine;
+                    currentProcess.Start();
+                    currentProcess.BeginOutputReadLine(); currentProcess.BeginErrorReadLine();
+                    if (input != null) { currentProcess.StandardInput.Write(input); currentProcess.StandardInput.Flush(); currentProcess.StandardInput.Close(); }
                     currentProcess.WaitForExit(); return currentProcess.ExitCode == 0;
                 } catch { return false; }
             });
-            return (ok, raw.ToString());
+            lock (raw) return (ok, raw.ToString());
         }
     }
 }

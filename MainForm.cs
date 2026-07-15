@@ -18,7 +18,7 @@ namespace AttinyStudio
     public partial class MainForm : Form
     {
         [DllImport("user32.dll")] public static extern bool ReleaseCapture();
-        [DllImport("user32.dll")] public static extern int SendMessage(IntPtr hWnd, int Msg, int wParam, int lParam);
+        [DllImport("user32.dll")] public static extern IntPtr SendMessage(IntPtr hWnd, int Msg, IntPtr wParam, IntPtr lParam);
         private const int WM_NCLBUTTONDOWN = 0xA1;
         private const int HT_CAPTION = 0x2;
 
@@ -27,6 +27,7 @@ namespace AttinyStudio
         private string avrdudeConfPath;
         private string packedAvrVer = "8.1";
         private Process currentProcess = null;
+        private Task extractTask;
         public Icon AppIcon = null;
 
         private string selPart = "attiny85", selProg = "stk500v1";
@@ -65,7 +66,8 @@ namespace AttinyStudio
             this.FormBorderStyle = FormBorderStyle.None;
             this.Text = AppMetadata.Title; this.StartPosition = FormStartPosition.CenterScreen;
             this.Font = new Font("Segoe UI", 9);
-            LoadSettings(); SetupIcon(); ExtractAllAvrdudeFiles();
+            LoadSettings(); SetupIcon();
+            extractTask = Task.Run(() => ExtractAllAvrdudeFiles());
             InitializeComponent(); RefreshPorts(); ApplyChipSettings(selPart);
             Log($"[SYSTEM] App Initialized.");
             Log($"[SYSTEM] Temp Directory: {tempDir}");
@@ -75,7 +77,7 @@ namespace AttinyStudio
         }
 
         private void InitChipData() {
-            var t13 = new ChipConfig { EepSize=64, Flash="1 KB", Sram="64B", Pins="8", Speed="9.6MHz", Layout="1:RST 8:VCC\n2:PB3 7:PB2\n3:PB4 6:PB1\n4:GND 5:PB0" };
+            var t13 = new ChipConfig { EepSize=64, HasEfuse=false, Flash="1 KB", Sram="64B", Pins="8", Speed="9.6MHz", Layout="1:RST 8:VCC\n2:PB3 7:PB2\n3:PB4 6:PB1\n4:GND 5:PB0" };
             t13.Fuses.Add(new FuseOption { Name="1.2 MHz", L="0x6A", H="0xFF", E="0xFF", IsInternal=true });
             t13.Fuses.Add(new FuseOption { Name="4.8 MHz", L="0x79", H="0xFF", E="0xFF", IsInternal=true });
             t13.Fuses.Add(new FuseOption { Name="9.6 MHz", L="0x7A", H="0xFF", E="0xFF", IsInternal=true });
@@ -116,7 +118,11 @@ namespace AttinyStudio
             m2560.Fuses.Add(new FuseOption { Name="8 MHz", L="0xE2", H="0xD9", E="0xFD", IsInternal=true });
             m2560.Fuses.Add(new FuseOption { Name="Ext. Crystal", L="0xFF", H="0xD9", E="0xFD", IsInternal=false });
             chipData["atmega2560"] = m2560;
-            chipData["atmega32u4"] = m2560;
+
+            var m32u4 = new ChipConfig { EepSize=1024, Flash="32 KB", Sram="2.5KB", Pins="44", Speed="16MHz", Layout="13:RST 14:VCC\n15:GND 10:MOSI\n11:MISO 9:SCK" };
+            m32u4.Fuses.Add(new FuseOption { Name="8 MHz Internal", L="0xE2", H="0xD9", E="0xF3", IsInternal=true });
+            m32u4.Fuses.Add(new FuseOption { Name="Ext. Crystal", L="0xFF", H="0xD9", E="0xF3", IsInternal=false });
+            chipData["atmega32u4"] = m32u4;
         }
 
         protected override void OnFormClosing(FormClosingEventArgs e) { SaveSettings(); CleanupAndExit(); base.OnFormClosing(e); }
@@ -146,6 +152,8 @@ namespace AttinyStudio
                     }
                 }
             } catch { }
+            if (!chipData.ContainsKey(selPart)) selPart = "attiny85";
+            if (selBaud <= 0) selBaud = 19200;
         }
 
         private void SaveSettings() {

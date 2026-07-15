@@ -24,6 +24,7 @@ namespace AttinyStudio
     public class ChipConfig {
         public List<FuseOption> Fuses = new List<FuseOption>();
         public int EepSize;
+        public bool HasEfuse = true;
         public string Flash, Sram, Pins, Speed, Layout;
     }
 }

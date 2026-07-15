@@ -16,6 +16,27 @@ namespace AttinyStudio
 {
     public partial class MainForm
     {
+        private Bitmap LoadHqIconBitmap(string resourceName, int w, int h) {
+            try {
+                using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName)) {
+                    if (s == null) return null;
+                    using (Icon srcIcon = new Icon(s))
+                    using (Bitmap srcBmp = srcIcon.ToBitmap()) {
+                        Bitmap dst = new Bitmap(w, h);
+                        using (Graphics g = Graphics.FromImage(dst)) {
+                            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.HighQuality;
+                            g.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
+                            g.PixelOffsetMode = System.Drawing.Drawing2D.PixelOffsetMode.HighQuality;
+                            g.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
+                            g.Clear(Color.Transparent);
+                            g.DrawImage(srcBmp, new Rectangle(0, 0, w, h));
+                        }
+                        return dst;
+                    }
+                }
+            } catch { return null; }
+        }
+
         private void InitializeComponent() {
             mainLayout = new TableLayoutPanel { Dock = DockStyle.Fill, RowCount = 6, ColumnCount = 1, BackColor = Theme.ClrBack, Padding = new Padding(0), Margin = new Padding(0) };
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 175)); mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 75));  
@@ -23,20 +44,20 @@ namespace AttinyStudio
             mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 12)); mainLayout.RowStyles.Add(new RowStyle(SizeType.Absolute, 40));  
 
             pnlHeader = new Panel { Name = "pnlHeader", Dock = DockStyle.Fill, BackColor = Theme.ClrHeader, Margin = new Padding(0) };
-            pnlHeader.MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0); } };
+            pnlHeader.MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, WM_NCLBUTTONDOWN, (IntPtr)HT_CAPTION, IntPtr.Zero); } };
             
-            PictureBox picIcon = new PictureBox { Size = new Size(110, 110), Left = 35, Top = 25, SizeMode = PictureBoxSizeMode.Zoom };
-            try { using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream("icon.ico")) { if (s != null) picIcon.Image = new Icon(s, new Size(256, 256)).ToBitmap(); } } catch { }
-            picIcon.MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0); } };
+            PictureBox picIcon = new PictureBox { Size = new Size(110, 110), Left = 35, Top = 25, SizeMode = PictureBoxSizeMode.Normal };
+            picIcon.Image = LoadHqIconBitmap("icon.ico", picIcon.Width, picIcon.Height);
+            picIcon.MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, WM_NCLBUTTONDOWN, (IntPtr)HT_CAPTION, IntPtr.Zero); } };
 
             lblHeaderTitle = new Label { Text = AppMetadata.Title.ToUpper(), Left = 160, Top = 35, AutoSize = true, Font = new Font("Segoe UI Semibold", 48, FontStyle.Bold), ForeColor = Color.White };
-            lblHeaderTitle.MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, WM_NCLBUTTONDOWN, HT_CAPTION, 0); } };
+            lblHeaderTitle.MouseDown += (s, e) => { if (e.Button == MouseButtons.Left) { ReleaseCapture(); SendMessage(Handle, WM_NCLBUTTONDOWN, (IntPtr)HT_CAPTION, IntPtr.Zero); } };
             lblMadeBy = new Label { Text = "BY " + AppMetadata.Author, Left = 168, Top = 125, AutoSize = true, Font = new Font("Segoe UI", 14, FontStyle.Bold), ForeColor = Theme.ClrAccent };
             
             btnExit = new Button { Text = "✕", FlatStyle = FlatStyle.Flat, BackColor = Color.Transparent, ForeColor = Color.White, Font = new Font("Segoe UI", 14, FontStyle.Bold), Size = new Size(45, 45), Top = 0, Cursor = Cursors.Hand };
             btnExit.FlatAppearance.BorderSize = 0; btnExit.FlatAppearance.MouseOverBackColor = Color.Firebrick; btnExit.Click += (s, e) => this.Close();
             btnMax = new Button { Text = "▢", FlatStyle = FlatStyle.Flat, BackColor = Color.Transparent, ForeColor = Color.White, Font = new Font("Segoe UI", 14, FontStyle.Bold), Size = new Size(45, 45), Top = 0, Cursor = Cursors.Hand };
-            btnMax.FlatAppearance.BorderSize = 0; btnMax.FlatAppearance.MouseOverBackColor = Color.FromArgb(60, 60, 60); btnMax.Click += (s, e) => { this.WindowState = (this.WindowState == FormWindowState.Maximized) ? FormWindowState.Normal : FormWindowState.Maximized; };
+            btnMax.FlatAppearance.BorderSize = 0; btnMax.FlatAppearance.MouseOverBackColor = Color.FromArgb(60, 60, 60); btnMax.Click += (s, e) => { this.MaximizedBounds = Screen.FromControl(this).WorkingArea; this.WindowState = (this.WindowState == FormWindowState.Maximized) ? FormWindowState.Normal : FormWindowState.Maximized; };
             btnMin = new Button { Text = "—", FlatStyle = FlatStyle.Flat, BackColor = Color.Transparent, ForeColor = Color.White, Font = new Font("Segoe UI", 14, FontStyle.Bold), Size = new Size(45, 45), Top = 0, Cursor = Cursors.Hand };
             btnMin.FlatAppearance.BorderSize = 0; btnMin.FlatAppearance.MouseOverBackColor = Color.FromArgb(60, 60, 60); btnMin.Click += (s, e) => this.WindowState = FormWindowState.Minimized;
             this.SizeChanged += (s, e) => { btnExit.Left = this.Width - 45; btnMax.Left = this.Width - 90; btnMin.Left = this.Width - 135; };
@@ -55,7 +76,7 @@ namespace AttinyStudio
             tabs.DrawItem += (s, e) => {
                 Graphics g = e.Graphics; Rectangle rect = tabs.GetTabRect(e.Index); bool selected = tabs.SelectedIndex == e.Index;
                 using (SolidBrush sb = new SolidBrush(selected ? Theme.ClrAccent : Theme.ClrHeader)) g.FillRectangle(sb, rect);
-                TextRenderer.DrawText(g, tabs.TabPages[e.Index].Text, new Font("Segoe UI Semibold", 9.5f), rect, selected ? Color.White : Color.Gray, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
+                TextRenderer.DrawText(g, tabs.TabPages[e.Index].Text, Theme.FontTab, rect, selected ? Color.White : Color.Gray, TextFormatFlags.VerticalCenter | TextFormatFlags.HorizontalCenter);
             };
             tabs.SelectedIndexChanged += (s, e) => { if (tabs.SelectedTab.Text == "CHIP INFO") RefreshChipDynamicInfo(); };
             string[] tNames = { "FLASH", "FUSES", "EEPROM", "BATCH", "TERMINAL", "SNIPPETS", "CHIP INFO", "DRIVERS", "SETTINGS", "PINOUT", "ABOUT" };
@@ -134,7 +155,7 @@ namespace AttinyStudio
             f.Controls.Add(CreateTile("WRITE FLASH", "Upload .HEX to chip", (s, e) => RunAvrdude("-U flash:w:\"$FILE$\":i", true, "HEX|*.hex")));
             f.Controls.Add(CreateTile("READ FLASH", "Backup .HEX from chip", (s, e) => RunAvrdude("-U flash:r:\"$FILE$\":i", false, "HEX|*.hex")));
             f.Controls.Add(CreateTile("VERIFY FLASH", "Compare file vs chip", (s, e) => RunAvrdude("-U flash:v:\"$FILE$\":i", true, "HEX|*.hex")));
-            f.Controls.Add(CreateTile("CHIP STATUS", "Read ID and tables", (s, e) => RunAvrdude("-v -U lfuse:r:-:h -U hfuse:r:-:h -U efuse:r:-:h", false, null)));
+            f.Controls.Add(CreateTile("CHIP STATUS", "Read ID and tables", (s, e) => RunAvrdude("-v -U lfuse:r:-:h -U hfuse:r:-:h" + (chipData.ContainsKey(selPart) && chipData[selPart].HasEfuse ? " -U efuse:r:-:h" : ""), false, null)));
             f.Controls.Add(CreateTile("FULL ERASE", "Wipe all and reset", (s, e) => { if(Confirm("Erase everything?")) RunAvrdude("-e", false, null); }));
             tp.Controls.Add(f);
         }
@@ -148,7 +169,7 @@ namespace AttinyStudio
                 var c = chipData[selPart];
                 foreach (var opt in c.Fuses.OrderByDescending(x => x.IsInternal)) {
                     string type = opt.IsInternal ? "[INTERNAL]" : "[EXTERNAL]";
-                    f.Controls.Add(CreateTile(opt.Name, type, (s, e) => RunAvrdude(string.Format("-U lfuse:w:{0}:m -U hfuse:w:{1}:m -U efuse:w:{2}:m", opt.L, opt.H, opt.E), false, null)));
+                    f.Controls.Add(CreateTile(opt.Name, type, (s, e) => RunAvrdude(FuseWriteCmd(opt), false, null)));
                 }
             }
             Panel cnl = new Panel { Width = 920, Height = 140, Margin = new Padding(30), BackColor = Theme.ClrPanel };
@@ -156,7 +177,7 @@ namespace AttinyStudio
             txtH = new TextBox { Top = 55, Left = 140, Width = 100, Text = "0xDF", BackColor = Theme.ClrBack, ForeColor = Theme.ClrText, Font = new Font("Consolas", 12) };
             txtE = new TextBox { Top = 55, Left = 250, Width = 100, Text = "0xFF", BackColor = Theme.ClrBack, ForeColor = Theme.ClrText, Font = new Font("Consolas", 12) };
             Button bW = CreateButton("WRITE FUSES", 380, 52, 160, Color.FromArgb(45, 45, 55), Color.White);
-            bW.Click += (s,e) => RunAvrdude(string.Format("-U lfuse:w:{0}:m -U hfuse:w:{1}:m -U efuse:w:{2}:m", txtL.Text, txtH.Text, txtE.Text), false, null);
+            bW.Click += (s,e) => RunAvrdude(FuseWriteCmd(txtL.Text, txtH.Text, txtE.Text), false, null);
             cnl.Controls.AddRange(new Control[] { txtL, txtH, txtE, bW }); f.Controls.Add(cnl); tp.Controls.Add(f);
         }
 
@@ -201,7 +222,7 @@ namespace AttinyStudio
             dgvBatch.DragDrop += (s, e) => { Point p = dgvBatch.PointToClient(new Point(e.X, e.Y)); int dropIndex = dgvBatch.HitTest(p.X, p.Y).RowIndex; if (e.Effect == DragDropEffects.Move && dropIndex != -1) { DataGridViewRow r = e.Data.GetData(typeof(DataGridViewRow)) as DataGridViewRow; dgvBatch.Rows.RemoveAt(rowIndexFromMouseDown); dgvBatch.Rows.Insert(dropIndex, r); } };
 
             btnSearch.Click += (s, e) => { using (FolderBrowserDialog fbd = new FolderBrowserDialog()) if (fbd.ShowDialog() == DialogResult.OK) foreach(var f in Directory.GetFiles(fbd.SelectedPath, "*.hex", SearchOption.AllDirectories)) dgvBatch.Rows.Add(Path.GetFileName(f), "PENDING", f); };
-            btnDelete.Click += (s, e) => { if (dgvBatch.SelectedRows.Count > 0 && Confirm("Delete selected rows?")) foreach (DataGridViewRow row in dgvBatch.SelectedRows) dgvBatch.Rows.Remove(row); };
+            btnDelete.Click += (s, e) => { if (dgvBatch.SelectedRows.Count > 0 && Confirm("Delete selected rows?")) while (dgvBatch.SelectedRows.Count > 0) dgvBatch.Rows.Remove(dgvBatch.SelectedRows[0]); };
 
             Func<DataGridViewRow, Task<(bool, string)>> flashRow = async (row) => {
                 string path = row.Cells[2].Value.ToString();
@@ -209,7 +230,7 @@ namespace AttinyStudio
                 string fuseCmd = "";
                 if (chkBatchSetFuses.Checked && cbBatchTargetFreq.SelectedItem != null) {
                     var opt = chipData[selPart].Fuses.FirstOrDefault(x => x.Name == cbBatchTargetFreq.Text);
-                    if (opt != null) fuseCmd = string.Format("-U lfuse:w:{0}:m -U hfuse:w:{1}:m -U efuse:w:{2}:m ", opt.L, opt.H, opt.E);
+                    if (opt != null) fuseCmd = FuseWriteCmd(opt) + " ";
                 }
                 string cmd = (chkBatchErase.Checked ? "-e " : "") + fuseCmd + $"-U flash:w:\"{path}\":i " + (chkBatchVerify.Checked ? $"-U flash:v:\"{path}\":i " : "");
                 var res = await ExecuteAvrdudeTaskWithOutput(cmd);
@@ -242,6 +263,7 @@ namespace AttinyStudio
                 lblStatus.Text = isBatchAborted ? "  BATCH ABORTED" : "  BATCH FINISHED";
                 lblStatus.BackColor = isBatchAborted ? Color.Firebrick : Color.ForestGreen;
                 SetAbortState(false);
+                batchCts.Dispose(); batchCts = null;
             };
 
             btnNextFile.Click += async (s, e) => {
@@ -319,18 +341,23 @@ namespace AttinyStudio
 
         private void SetupDriversTab(TabPage tp) {
             FlowLayoutPanel f = new FlowLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(35), WrapContents = true, AutoScroll = true };
-            Action<string, string, string, string, bool> ad = (n, d, l, p, e) => f.Controls.Add(CreateTile(n, d + "\n" + l, (s, ev) => {
-                try { 
-                    string fp = ExtractDriverFolder("Drivers\\" + p); 
-                    if (e) Process.Start(new ProcessStartInfo { FileName = fp, UseShellExecute = true, Verb = "runas" }); 
-                    else Process.Start("explorer.exe", fp); 
+            // exe: "" = extracted path is the installer itself, "name.exe" = run that file inside the extracted folder, null = open folder in Explorer
+            Action<string, string, string, string, string> ad = (n, d, l, p, exe) => f.Controls.Add(CreateTile(n, d + "\n" + l, (s, ev) => {
+                try {
+                    string fp = ExtractDriverFolder("Drivers\\" + p);
+                    if (fp == null) { MessageBox.Show("Driver files for " + n + " were not found in this build.", "Driver Error", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                    if (exe != null) {
+                        string target = exe.Length == 0 ? fp : Path.Combine(fp, exe);
+                        if (!File.Exists(target)) { MessageBox.Show("Installer not found: " + target, "Driver Error", MessageBoxButtons.OK, MessageBoxIcon.Warning); return; }
+                        Process.Start(new ProcessStartInfo { FileName = target, UseShellExecute = true, Verb = "runas" });
+                    } else Process.Start("explorer.exe", "\"" + fp + "\"");
                 }
-                catch { MessageBox.Show("Failed to launch driver."); }
+                catch (Exception ex) { MessageBox.Show("Failed to launch driver: " + ex.Message, "Driver Error", MessageBoxButtons.OK, MessageBoxIcon.Error); }
             }));
-            ad("CH340", "Serial Driver", "wch-ic.com", "CH341SER.EXE", true); 
-            ad("ZADIG", "USB Filter", "zadig.akeo.ie", "zadig-2.9.exe", true);
-            ad("FTDI", "VCP Drivers", "ftdichip.com", "CDM-v2.12.36.20-WHQL-Certified", false); 
-            ad("CP210x", "Silicon Labs", "silabs.com", "CP210x_VCP_Windows", false);
+            ad("CH340", "Serial Driver", "wch-ic.com", "CH341SER.EXE", "");
+            ad("ZADIG", "USB Filter", "zadig.akeo.ie", "zadig-2.9.exe", "");
+            ad("FTDI", "VCP Drivers", "ftdichip.com", "CDM-v2.12.36.20-WHQL-Certified", null);
+            ad("CP210x", "Silicon Labs", "silabs.com", "CP210x_Windows_Drivers", "CP210xVCPInstaller_x64.exe");
             tp.Controls.Add(f);
         }
 
@@ -367,12 +394,14 @@ namespace AttinyStudio
             Action<string, Control> add = (l, c) => { Label lbl = new Label { Text = l, Top = y + 8, Left = 0, Width = 200, ForeColor = Color.Gray, Font = new Font("Segoe UI Semibold", 11) }; c.Top = y; c.Left = 220; c.Width = 380; p.Controls.AddRange(new Control[] { lbl, c }); y += 55; };
             cbProgs = new ComboBox { Width = 380, DropDownStyle = ComboBoxStyle.DropDownList, BackColor = Theme.ClrPanel, ForeColor = Theme.ClrText, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10) };
             cbProgs.Items.AddRange(new string[] { "stk500v1", "stk500v2", "usbasp", "usbtiny", "arduino", "avrispmkII", "buspirate", "picoprog", "jtagice" }); cbProgs.SelectedItem = selProg;
+            if (cbProgs.SelectedIndex < 0) cbProgs.SelectedIndex = 0;
             cbProgs.SelectedIndexChanged += (s, e) => { selProg = cbProgs.Text; Log($"[SETTING] Programmer changed to: {selProg}"); };
             cbParts = new ComboBox { Width = 380, DropDownStyle = ComboBoxStyle.DropDownList, BackColor = Theme.ClrPanel, ForeColor = Theme.ClrText, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10) };
             cbParts.Items.AddRange(chipData.Keys.ToArray()); cbParts.SelectedItem = selPart;
             cbParts.SelectedIndexChanged += (s, e) => { selPart = cbParts.Text; ApplyChipSettings(selPart); Log($"[SETTING] Chip changed to: {selPart}"); };
             cbBauds = new ComboBox { Width = 380, DropDownStyle = ComboBoxStyle.DropDownList, BackColor = Theme.ClrPanel, ForeColor = Theme.ClrText, FlatStyle = FlatStyle.Flat, Font = new Font("Segoe UI", 10) };
             cbBauds.Items.AddRange(new string[] { "9600", "19200", "38400", "57600", "115200", "250000", "500000" }); cbBauds.SelectedItem = selBaud.ToString();
+            if (cbBauds.SelectedIndex < 0) cbBauds.SelectedItem = "19200";
             cbBauds.SelectedIndexChanged += (s, e) => { int.TryParse(cbBauds.Text, out selBaud); Log($"[SETTING] Baud rate changed to: {selBaud}"); };
             chkVerbose = new CheckBox { Text = "Verbose (-v)", ForeColor = Color.White, Checked = s_Verbose, AutoSize = true }; chkVerbose.CheckedChanged += (s, e) => s_Verbose = chkVerbose.Checked;
             chkForce = new CheckBox { Text = "Force (-F)", ForeColor = Color.White, Checked = s_Force, AutoSize = true }; chkForce.CheckedChanged += (s, e) => s_Force = chkForce.Checked;
@@ -387,20 +416,34 @@ namespace AttinyStudio
             tp.Controls.Add(picPinout);
         }
 
+        // Chips that are pin-for-pin identical to another chip's package (same physical layout,
+        // reused in InitChipData via shared Layout strings) fall back to that chip's pinout image
+        // when no dedicated image has been dropped into their own Assets\Pinouts\<chip>\ folder.
+        private static readonly Dictionary<string, string> PinoutFallback = new Dictionary<string, string> {
+            { "attiny45", "attiny85" }, { "attiny25", "attiny85" },
+            { "atmega168", "atmega328p" }, { "atmega88", "atmega328p" }, { "atmega48", "atmega328p" },
+        };
+
+        private string FindPinoutResource(string chip) {
+            foreach (string res in Assembly.GetExecutingAssembly().GetManifestResourceNames())
+                if (res.StartsWith($"Pinouts\\{chip}\\", StringComparison.OrdinalIgnoreCase)) return res;
+            return null;
+        }
+
         private void LoadPinoutImage(string chip) {
             if (picPinout == null) return;
-            string folder = chip;
-            if (chip == "attiny85" || chip == "attiny45" || chip == "attiny25") folder = "attiny85_45_25";
             try {
-                string foundRes = null;
-                foreach (string res in Assembly.GetExecutingAssembly().GetManifestResourceNames()) {
-                    if (res.StartsWith($"Pinouts\\{folder}\\", StringComparison.OrdinalIgnoreCase)) { foundRes = res; break; }
-                }
+                string foundRes = FindPinoutResource(chip);
+                if (foundRes == null && PinoutFallback.TryGetValue(chip, out string fallback)) foundRes = FindPinoutResource(fallback);
                 if (foundRes != null) {
-                    Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream(foundRes);
-                    if (s != null) {
-                        if (picPinout.Image != null) picPinout.Image.Dispose();
-                        picPinout.Image = Image.FromStream(s);
+                    using (Stream s = Assembly.GetExecutingAssembly().GetManifestResourceStream(foundRes)) {
+                        if (s != null) {
+                            using (Image img = Image.FromStream(s)) {
+                                Bitmap bmp = new Bitmap(img);
+                                if (picPinout.Image != null) picPinout.Image.Dispose();
+                                picPinout.Image = bmp;
+                            }
+                        }
                     }
                 } else {
                     if (picPinout.Image != null) { picPinout.Image.Dispose(); picPinout.Image = null; }

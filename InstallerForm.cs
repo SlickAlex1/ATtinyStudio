@@ -86,7 +86,7 @@ namespace AttinyStudio
                 lblStatus.Text = "Creating Desktop Shortcut...";
                 await Task.Run(() => {
                     string desktop = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
-                    string ps = string.Format("$s=(New-Object -ComObject WScript.Shell).CreateShortcut('{0}\\{1}.lnk');$s.TargetPath='{2}';$s.Save()", desktop, AppMetadata.Title, finalExe);
+                    string ps = string.Format("$s=(New-Object -ComObject WScript.Shell).CreateShortcut('{0}\\{1}.lnk');$s.TargetPath='{2}';$s.Save()", desktop.Replace("'", "''"), AppMetadata.Title.Replace("'", "''"), finalExe.Replace("'", "''"));
                     ProcessStartInfo psi = new ProcessStartInfo("powershell", "-NoProfile -Command \"" + ps + "\"") { CreateNoWindow = true, WindowStyle = ProcessWindowStyle.Hidden };
                     using(Process p = Process.Start(psi)) { p.WaitForExit(); }
                 });

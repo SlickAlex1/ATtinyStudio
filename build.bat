@@ -110,9 +110,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -Command "Expand-Archive -Path '!Z
 del /Q /S "%TEMP_EXT%\*.pdb" >nul 2>&1
 
 if exist "%ASSETS_DIR%\" (
-    for %%f in ("%ASSETS_DIR%\*.*") do (
-        if not "%%~nxf"=="icon.ico" copy /Y "%%f" "%TEMP_EXT%\" >nul
-    )
+    for %%f in ("%ASSETS_DIR%\*.*") do copy /Y "%%f" "%TEMP_EXT%\" >nul
     if exist "%ASSETS_DIR%\Pinouts\" (
         xcopy "%ASSETS_DIR%\Pinouts" "%TEMP_EXT%\Pinouts\" /E /I /Y >nul
     )
@@ -150,9 +148,6 @@ echo     ^<PublishSingleFile^>true^</PublishSingleFile^> >> "%PROJ_FILE%"
 echo     ^<SelfContained^>true^</SelfContained^> >> "%PROJ_FILE%"
 echo     ^<RuntimeIdentifier^>win-x64^</RuntimeIdentifier^> >> "%PROJ_FILE%"
 echo     ^<IncludeNativeLibrariesForSelfExtract^>true^</IncludeNativeLibrariesForSelfExtract^> >> "%PROJ_FILE%"
-echo     ^<PublishTrimmed^>true^</PublishTrimmed^> >> "%PROJ_FILE%"
-echo     ^<TrimMode^>partial^</TrimMode^> >> "%PROJ_FILE%"
-echo     ^<SuppressTrimAnalysisWarnings^>true^</SuppressTrimAnalysisWarnings^> >> "%PROJ_FILE%"
 echo     ^<PublishReadyToRun^>false^</PublishReadyToRun^> >> "%PROJ_FILE%"
 echo     ^<EnableCompressionInSingleFile^>true^</EnableCompressionInSingleFile^> >> "%PROJ_FILE%"
 echo     ^<SupportedOSPlatformVersion^>7.0^</SupportedOSPlatformVersion^> >> "%PROJ_FILE%"

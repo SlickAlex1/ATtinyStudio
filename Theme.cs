@@ -11,5 +11,6 @@ namespace AttinyStudio
         public static Color ClrAccent = Color.FromArgb(0, 140, 255);
         public static Color ClrConsole = Color.FromArgb(5, 5, 5);
         public static Color ClrLime = Color.FromArgb(0, 255, 120);
+        public static Font FontTab = new Font("Segoe UI Semibold", 9.5f);
     }
 }
